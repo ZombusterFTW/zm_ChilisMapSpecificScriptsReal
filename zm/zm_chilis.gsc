@@ -457,7 +457,7 @@ function dog_round_fog()
         }
 
         //dogroundsound PlayLoopSound("mus_dogthemelp", 15);
-        if(level.jukeboxisplayingchilis == true) dogroundsound thread delayedloopmusicfunc(10, 2, "mus_dogthemelp");
+        if(!level.jukeboxisplayingchilis) dogroundsound thread delayedloopmusicfunc(10, 2, "mus_dogthemelp");
         level waittill( "last_ai_down", e_last ); //This makes the script wait until the last dog has been killed.
         dogroundsound StopLoopSound(2);
         wait(2);
@@ -1031,7 +1031,20 @@ function init_video_2()
  trig SetCursorHint("HINT_NOICON");
  trig SetHintString("The time is not yet right....");
  Tvs = GetEntArray("videoplayer", "targetname");
+ trig Delete();
+ foreach(tv in Tvs)
+ {
+    if(isdefined(tv)) tv Delete();
+ }
+
+
+ break;
  level waittill("chungusvideoend");
+
+
+
+
+
 
  while(1)
  {
@@ -1042,10 +1055,11 @@ function init_video_2()
   trig SetCursorHint("HINT_NOICON");
   VideoStart("anothertest",true);
   //PlaySoundAtPosition("zombiescomedy", Tvs.origin);
-  foreach(videoplayer in Tvs)
-  {
-    PlaySoundAtPosition("zombiescomedy", videoplayer.origin);
-  }
+  //foreach(videoplayer in Tvs)
+  //{
+   // PlaySoundAtPosition("zombiescomedy", videoplayer.origin);
+  //}
+  level.chilisspeakersystem PlaySound("zombiescomedy");
   //foreach(player in GetPlayers())
   //{
     //player PlaySound( "zombiescomedy" );
@@ -1197,7 +1211,7 @@ function devteleportconfirm(structarray)
 
 function autoexec pianoee()
 {
-    level waittill("initial_blackscreen_passed");
+  level waittill("initial_blackscreen_passed");
   level.pianoee = GetEnt("pianoee", "targetname");
   level.pianoeemodel = GetEnt("pianoeemodel", "targetname");
   int = 0;
@@ -1212,6 +1226,7 @@ function autoexec pianoee()
     }
     wait(0.05);
   }
+  level thread zm_powerups::specific_powerup_drop("carpenter", player.origin, undefined, undefined, undefined, undefined, false );
   wait(1.5);
   level notify("storycriteescene");
   thread zm_subtitles::subtitle_display(undefined, 3, "^0The Weston Hotel", "^3[Now Playing]^7: Samantha's Ballad, Written By Brian Tuey.");

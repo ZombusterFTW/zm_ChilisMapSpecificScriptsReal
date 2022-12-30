@@ -313,6 +313,11 @@ function knifetocycle(jukeboxnotify, jukeboxnotif2, soundarray)
 			self thread knifetocycle(jukeboxnotify, jukeboxnotif2, soundarray);
 			break;
 		}
+		else
+		{
+			self thread knifetocycle(jukeboxnotify, jukeboxnotif2, soundarray);
+			break;
+		}
 		wait(0.05);
 	}
 }
