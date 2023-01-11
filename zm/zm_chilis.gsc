@@ -46,6 +46,7 @@
 //#using scripts\zm\_zm_bgb_fix;
 #using scripts\zm\jukeboxv2random;
 #using scripts\zm\_zm_ai_dogs;
+#using scripts\zm\_zm_settings_menu;
 
 
 //Powerups
@@ -208,6 +209,8 @@ clientfield::register( "toplayer",      "filter_brooms",           VERSION_SHIP,
 clientfield::register( "toplayer",      "tele_filter",           VERSION_SHIP, 1, "int" );
 clientfield::register( "allplayers",    "flashlight_fx_world",          VERSION_SHIP, 1, "int" );
 visionset_mgr::register_info("visionset", "desaturatedred", VERSION_SHIP, 100, 1, 0);
+//menu UI settings
+
 zm_usermap::main();
 level.darknessactive = false;
 
@@ -225,6 +228,7 @@ level.darknessactive = false;
 //level thread roomserviceeasteregg::init();
 // Sphynx's Console Commands
 //level.pointrockdebug = 0;
+level util::set_lighting_state(1);
 level thread commands::init(level.chilisbigdebug);
 //dev stuff
 level.dognon_stop = false;
@@ -270,6 +274,8 @@ level thread pap_detect();
 level thread jukeboxv2random::__init__();
 level thread zombs_no_collide();
 level thread dog_round_fog();
+zm_settings_menu::pregame_init();
+
 //level thread T8ZA::set_name_for_undefined_zones( "start_zone", "Spawn Room" );
 //level thread T8ZA::init();
 //level thread poweronchilisannounce();
@@ -288,6 +294,7 @@ zm_melee_weapon::init("sickle_knife", "sickle_flourish", "knife_ballistic_sickle
 zm_utility::register_tactical_grenade_for_level( "octobomb" );
 callback::on_spawned( &bo2_deathhands );
 callback::on_connect    ( &on_player_connect_flash );
+zm_settings_menu::register_handler("ZMSettings_YoutuberMode", &set_youtuber_mode);
 }
 
 function on_player_connect_flash()
@@ -915,13 +922,16 @@ function attract_zombies()
 function autoexec intro_credits()
 {
     level waittill("initial_blackscreen_passed");
+    level flag::wait_till("zm_settings_menu_complete");
     level thread objectivetrackerchilis("Investigate the area.");
     hoteldetect = GetEnt("hoteldetectplayerentrance", "targetname");
     thread creat_simple_text_hud( "Chilis, Near Easton, Pennslyvania", 20, 80 + 355, 3, 5 );
     thread creat_simple_text_hud( "July 4th, 2074", 20, 50 + 355, 2, 5 );
     thread creat_simple_text_hud( "Rendevouz With Strike-Team X-Ray...", 20, 30 + 355, 2, 5 );
     wait(1);
-    IPrintLnBold("Some hints and story details are conveyed exclusively through subtitles.");
+    IPrintLnBold("It's highly suggested to turn on subtitles!");
+    wait(1);
+    if(level.youtubermode) IPrintLnBold("Youtuber mode is enabled! Copyrighted music will be replaced or muted.");
     //level waittill("firstterminalhintactivated");
     //level thread objectivetrackerchilis("Restore Power And Activate The Terminal.");
     //thread creat_simple_text_hud( "Restore Power And Activate The Terminal.", 50, 30, 2, 5 );
@@ -1407,3 +1417,8 @@ function _PlayFxWithCleanup(fx, origin, duration)
 }
 
 
+function private set_youtuber_mode(value)
+{
+    if(value-1 == 0) level.youtubermode = false;
+    else level.youtubermode = true;
+}

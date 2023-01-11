@@ -169,6 +169,7 @@ LuiLoad("ui.uieditor.widgets.zminventorystalingrad.gametimewidget");
 	LuiLoad("ui.uieditor.widgets.reticles.pulserifle.pulseriflereticle_numbers_widget");
 	LuiLoad("ui.uieditor.widgets.reticles.pulserifle.pulseriflereticle_numbersint");
 	LuiLoad("ui.uieditor.widgets.reticles.pulserifle.pulseriflereticle_numbersscreen");
+    LuiLoad("ui.Scobalula.InGame.Menus.ZMSettingsMenu");
 
 
 	zm_usermap::main();
