@@ -46,7 +46,7 @@
 //#using scripts\zm\_zm_bgb_fix;
 #using scripts\zm\jukeboxv2random;
 #using scripts\zm\_zm_ai_dogs;
-#using scripts\zm\_zm_settings_menu;
+//#using scripts\zm\_zm_settings_menu;
 
 
 //Powerups
@@ -179,6 +179,7 @@
 
 function main()
 {
+
     //Setup the levels Zombie Zone Volumes
 level.zones = [];
 level.zone_manager_init_func =&usermap_test_zone_init;
@@ -194,10 +195,7 @@ init_zones[5] = "hallwaycine";
 init_zones[6] = "roofplayablearea";
 init_zones[7] = "thesourcezone";
 level._effect["poltergeist"] = "zombie/fx_barrier_buy_zmb";
-level thread zm_zonemgr::manage_zones( init_zones );
-///VERY IMPORTANT
- level.chilisbigdebug = true;
- level thread point_rock();
+
 //v7_giant_fx::main();
 clientfield::register("world", "employeekeycardchilis", VERSION_SHIP, 1, "int");
 clientfield::register("world", "element153pic", VERSION_SHIP, 1, "int");
@@ -208,10 +206,22 @@ clientfield::register( "toplayer",      "filter_source",           VERSION_SHIP,
 clientfield::register( "toplayer",      "filter_brooms",           VERSION_SHIP, 1, "int" );
 clientfield::register( "toplayer",      "tele_filter",           VERSION_SHIP, 1, "int" );
 clientfield::register( "allplayers",    "flashlight_fx_world",          VERSION_SHIP, 1, "int" );
+// Decal
+    clientfield::register( "world", "decal_toggle", VERSION_SHIP, 1, "int" );
+
+    // Rain
+    clientfield::register( "world", "rain_fx_stop", VERSION_SHIP, 1, "int" );
 visionset_mgr::register_info("visionset", "desaturatedred", VERSION_SHIP, 100, 1, 0);
 //menu UI settings
 
+
+//usermap here
 zm_usermap::main();
+level thread zm_zonemgr::manage_zones( init_zones );
+///VERY IMPORTANT
+ level.chilisbigdebug = true;
+ level thread point_rock();
+
 level.darknessactive = false;
 
 //WONDERFIZZ
@@ -228,7 +238,7 @@ level.darknessactive = false;
 //level thread roomserviceeasteregg::init();
 // Sphynx's Console Commands
 //level.pointrockdebug = 0;
-level util::set_lighting_state(1);
+level util::set_lighting_state(0);
 level thread commands::init(level.chilisbigdebug);
 //dev stuff
 level.dognon_stop = false;
@@ -274,7 +284,7 @@ level thread pap_detect();
 level thread jukeboxv2random::__init__();
 level thread zombs_no_collide();
 level thread dog_round_fog();
-zm_settings_menu::pregame_init();
+//zm_settings_menu::pregame_init();
 
 //level thread T8ZA::set_name_for_undefined_zones( "start_zone", "Spawn Room" );
 //level thread T8ZA::init();
@@ -294,7 +304,7 @@ zm_melee_weapon::init("sickle_knife", "sickle_flourish", "knife_ballistic_sickle
 zm_utility::register_tactical_grenade_for_level( "octobomb" );
 callback::on_spawned( &bo2_deathhands );
 callback::on_connect    ( &on_player_connect_flash );
-zm_settings_menu::register_handler("ZMSettings_YoutuberMode", &set_youtuber_mode);
+//zm_settings_menu::register_handler("ZMSettings_YoutuberMode", &set_youtuber_mode);
 }
 
 function on_player_connect_flash()
@@ -307,7 +317,7 @@ function on_player_connect_flash()
 
 function teleport_filters()
 {
-    
+    level._effect[ "player_rain" ] = "custom/env/fx_rain_player_z_heavy";
     level endon("end_game");
     while(1)
     {
@@ -500,6 +510,9 @@ function zombs_no_collide()
 
 function checkForPower()
 {
+ wait(0.05);
+ level util::set_lighting_state(0);
+ wait(0.05);
  level.chilispoweron = false;
  level util::set_lighting_state(1); /* set lighting state to [1] in Radiant (by default) */
  level waittill("power_on");
@@ -922,7 +935,7 @@ function attract_zombies()
 function autoexec intro_credits()
 {
     level waittill("initial_blackscreen_passed");
-    level flag::wait_till("zm_settings_menu_complete");
+    //level flag::wait_till("zm_settings_menu_complete");
     level thread objectivetrackerchilis("Investigate the area.");
     hoteldetect = GetEnt("hoteldetectplayerentrance", "targetname");
     thread creat_simple_text_hud( "Chilis, Near Easton, Pennslyvania", 20, 80 + 355, 3, 5 );
@@ -931,7 +944,7 @@ function autoexec intro_credits()
     wait(1);
     IPrintLnBold("It's highly suggested to turn on subtitles!");
     wait(1);
-    if(level.youtubermode) IPrintLnBold("Youtuber mode is enabled! Copyrighted music will be replaced or muted.");
+    if(isdefined(level.youtubermode) && level.youtubermode) IPrintLnBold("Youtuber mode is enabled! Copyrighted music will be replaced or muted.");
     //level waittill("firstterminalhintactivated");
     //level thread objectivetrackerchilis("Restore Power And Activate The Terminal.");
     //thread creat_simple_text_hud( "Restore Power And Activate The Terminal.", 50, 30, 2, 5 );

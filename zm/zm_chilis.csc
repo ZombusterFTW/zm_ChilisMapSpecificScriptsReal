@@ -105,19 +105,26 @@
 #precache( "client_fx", PURPLE_EYE_FX );
 #precache( "client_fx", PINK_EYE_FX );
 #precache( "client_fx", WHITE_EYE_FX );
-
+#precache ("client_fx", "custom/env/fx_rain_player_z_heavy");
 
 
 
 function main()
 {
 	//// LEVEL EFFECTS //// ##############################################################################
-
+    level._effect[ "player_rain" ] = "custom/env/fx_rain_player_z_heavy";
     level._effect[ "flashlight_fx_loop_view" ]          = "custom/flashlight/flashlight_loop";
     level._effect[ "flashlight_fx_loop_view_moths" ]    = "custom/flashlight/flashlight_loop_view_moths";
     level._effect[ "flashlight_fx_loop_world" ]         = "custom/flashlight/flashlight_loop_world";
 
     //// CLIENTFIELDS //// ##############################################################################
+    clientfield::register( "world", "rain_fx_stop", VERSION_SHIP, 1, "int", &rain_toggle, !CF_HOST_ONLY, !CF_CALLBACK_ZERO_ON_NEW_ENT );
+    // Rain player
+    level.rain_fx_enabled = true;
+
+    // Decal
+    clientfield::register( "world", "decal_toggle", VERSION_SHIP, 1, "int", &decal_toggle, !CF_HOST_ONLY, !CF_CALLBACK_ZERO_ON_NEW_ENT );
+    level.vdIndexArray = FindVolumeDecalIndexArray( "decalrain" );
 
     clientfield::register( "toplayer",      "flashlight_fx_view",           VERSION_SHIP, 1, "int", &flashlight_fx_view,        !CF_HOST_ONLY, !CF_CALLBACK_ZERO_ON_NEW_ENT );
     clientfield::register( "toplayer",      "filter_branch",           VERSION_SHIP, 1, "int", &filter_branch,        !CF_HOST_ONLY, !CF_CALLBACK_ZERO_ON_NEW_ENT );
@@ -169,7 +176,7 @@ LuiLoad("ui.uieditor.widgets.zminventorystalingrad.gametimewidget");
 	LuiLoad("ui.uieditor.widgets.reticles.pulserifle.pulseriflereticle_numbers_widget");
 	LuiLoad("ui.uieditor.widgets.reticles.pulserifle.pulseriflereticle_numbersint");
 	LuiLoad("ui.uieditor.widgets.reticles.pulserifle.pulseriflereticle_numbersscreen");
-    LuiLoad("ui.Scobalula.InGame.Menus.ZMSettingsMenu");
+    //LuiLoad("ui.Scobalula.InGame.Menus.ZMSettingsMenu");
 
 
 	zm_usermap::main();
@@ -188,6 +195,13 @@ LuiLoad("ui.uieditor.widgets.zminventorystalingrad.gametimewidget");
         filter::init_filter_tactical( player );
         filter::init_filter_overdrive( player );
         filter::init_filter_teleportation( player );
+    }
+
+    players = GetLocalPlayers();
+
+    for( i = 0; i < players.size; i++ )
+    {
+        players[i] thread rain_player(i);
     }
 
 }
@@ -339,5 +353,72 @@ function flashlight_fx_world( localClientNum, oldVal, newVal, bNewEnt, bInitialS
             KillFx( localClientNum, self.fx_flashlight_world );
                 self.fx_flashlight_world = undefined;
         }
+    }
+}
+
+function rain_toggle( localClientNum, oldVal, newVal, bNewEnt, bInitialSnap, fieldName, bWasTimeJump )
+{
+    if(newVal)
+    {
+        level.rain_fx_enabled = false;
+    } else {
+        level.rain_fx_enabled = true;
+    }
+}
+
+function decal_toggle( localClientNum, oldVal, newVal, bNewEnt, bInitialSnap, fieldName, bWasTimeJump )
+{
+    if(newVal)
+    {
+        //IPrintLnBold("Decal HIDE");
+        for(i=0; i < level.vdIndexArray.size; i++)
+        {
+            HideVolumeDecal(level.vdIndexArray[i]);
+        }
+    } else {
+        //IPrintLnBold("Decal UNHIDE");
+        for(i=0; i < level.vdIndexArray.size; i++)
+        {
+            UnhideVolumeDecal(level.vdIndexArray[i]);
+        }
+    }
+}
+
+function rain_player( localclientnum )
+{
+    self endon( "disconnect" );
+    self endon( "entityshutdown" );
+
+    self.rain_fx_tag = Spawn( localClientNum, self.origin, "script_model" );
+    self.rain_fx_tag setModel("tag_origin");
+
+    self.rain_fx = PlayFxOnTag( localClientNum, level._effect[ "player_rain" ], self.rain_fx_tag, "tag_origin" );
+
+    SetFXIgnorePause( localClientNum, self.rain_fx, true );
+    SetFXOutdoor( localClientNum , self.rain_fx);
+
+    while(1)
+    {
+        waitrealtime( 0.1 );
+        if(level.rain_fx_enabled)
+        {
+            if(!isdefined(self.rain_fx))
+            {
+                self.rain_fx = PlayFxOnTag( localClientNum, level._effect[ "player_rain" ], self.rain_fx_tag, "tag_origin" );
+
+                SetFXIgnorePause( localClientNum, self.rain_fx, true );
+                SetFXOutdoor( localClientNum , self.rain_fx);
+            }
+            self.rain_fx_tag.origin = self.origin;
+        } 
+        else 
+        {
+            if(isdefined(self.rain_fx))
+            {
+                DeleteFX( localclientnum, self.rain_fx );
+                self.rain_fx = undefined;
+            }
+        }
+        
     }
 }
